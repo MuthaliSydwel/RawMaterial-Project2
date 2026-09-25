@@ -83,20 +83,20 @@ public class Demo {
             report(n, "Reverse sorted", random);
         }
         System.out.println("Observation: comparisons never exceed about n*log2(n), whatever the input order.");
-        System.out.println("Sorted/reverse input needs ~half as many, so best, average and worst are all O(n log n).");
+        System.out.println("Merge sort splits and merges at every level: best, average and worst time are O(n log n).");
 
         System.out.println("\nLINEAR SEARCH (by ID) - elements examined");
-        System.out.printf("%-8s %12s %12s %12s %12s%n", "n", "Best(first)", "Average", "Worst(last)", "Not found");
+        System.out.printf("%-8s %12s %12s %12s %12s%n", "n", "Best(first)", "Middle", "Worst(last)", "Not found");
         System.out.println("-".repeat(60));
         for (int n : sizes) {
             InventoryManager inv = generate(n, 7);
             long best = probe(inv, "RM00000");
-            long avg = probe(inv, String.format("RM%05d", n / 2));
+            long middle = probe(inv, String.format("RM%05d", n / 2));
             long worst = probe(inv, String.format("RM%05d", n - 1));
             long none = probe(inv, "NOPE");
-            System.out.printf("%-8d %12d %12d %12d %12d%n", n, best, avg, worst, none);
+            System.out.printf("%-8d %12d %12d %12d %12d%n", n, best, middle, worst, none);
         }
-        System.out.println("Observation: best case 1 comparison, worst case n comparisons -> O(n).");
+        System.out.println("Best case: O(1); average and worst case: O(n). Middle is one lookup, not a measured average.");
     }
 
     private static void report(int n, String label, InventoryManager inv) {
@@ -111,7 +111,10 @@ public class Demo {
         return inv.lastSearchComparisons();
     }
 
-    /** Builds an inventory of n random materials with IDs RM00000 ... RM(n-1) in order. */
+    /**
+     * Builds an inventory of n random materials with IDs RM00000 ... RM(n-1) in
+     * order.
+     */
     private static InventoryManager generate(int n, long seed) {
         Random rnd = new Random(seed);
         InventoryManager inv = new InventoryManager();

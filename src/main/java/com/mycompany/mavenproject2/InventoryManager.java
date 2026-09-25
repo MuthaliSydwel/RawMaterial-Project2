@@ -13,11 +13,14 @@ import java.util.Comparator;
 
 /**
  * Business logic for the Raw Material Inventory. All records live in our own
- * DoublyLinkedList; searching uses our LinearSearch; sorting uses our MergeSort.
+ * DoublyLinkedList; searching uses our LinearSearch; sorting uses our
+ * MergeSort.
  */
 public class InventoryManager {
 
-    /** Fields the inventory can be sorted on. */
+    /**
+     * Fields the inventory can be sorted on.
+     */
     public enum SortField {
         ID("Material ID", Comparator.comparing(Material::getId, String.CASE_INSENSITIVE_ORDER)),
         NAME("Name", Comparator.comparing(Material::getName, String.CASE_INSENSITIVE_ORDER)),
@@ -34,57 +37,94 @@ public class InventoryManager {
             this.comparator = comparator;
         }
 
-        public String getLabel() { return label; }
+        public String getLabel() {
+            return label;
+        }
     }
 
     private final DoublyLinkedList<Material> materials = new DoublyLinkedList<>();
 
     // ---------------------------------------------------------------- insertion
-    /** Adds at the end of the list (O(1)). Returns false if the ID already exists. */
+    /**
+     * O(n) duplicate-ID check, then O(1) insertion at the end. Returns false
+     * for a duplicate.
+     */
     public boolean addMaterial(Material m) {
-        if (findNodeById(m.getId()) != null) return false;
+        if (findNodeById(m.getId()) != null) {
+            return false;
+        }
         materials.addLast(m);
         return true;
     }
 
-    /** Bulk loading of trusted, pre-validated data: O(1), skips the duplicate-ID scan. */
+    /**
+     * Bulk loading of trusted, pre-validated data: O(1), skips the duplicate-ID
+     * scan.
+     */
     void addMaterialFast(Material m) {
         materials.addLast(m);
     }
 
-    /** Adds at the front of the list (O(1)) - e.g. urgent/most recently received stock. */
+    /**
+     * O(n) duplicate-ID check, then O(1) insertion at the front. Returns false
+     * for a duplicate.
+     */
     public boolean addMaterialAtFront(Material m) {
-        if (findNodeById(m.getId()) != null) return false;
+        if (findNodeById(m.getId()) != null) {
+            return false;
+        }
         materials.addFirst(m);
         return true;
     }
 
     // ------------------------------------------------------------------ removal
-    /** Linear search O(n) to find the node, then O(1) unlink. Returns removed record or null. */
+    /**
+     * Linear search O(n) to find the node, then O(1) unlink. Returns removed
+     * record or null.
+     */
     public Material removeMaterial(String id) {
         DoublyLinkedList.Node<Material> node = findNodeById(id);
-        if (node == null) return null;
+        if (node == null) {
+            return null;
+        }
         return materials.removeNode(node);
     }
 
     // ------------------------------------------------------ stock movements
-    /** Goods received from a supplier. Returns updated record or null if ID not found. */
+    /**
+     * Receives positive stock without overflow. Returns updated record or null
+     * if ID not found.
+     */
     public Material receiveStock(String id, int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Quantity received must be positive.");
+        }
         DoublyLinkedList.Node<Material> node = findNodeById(id);
-        if (node == null) return null;
+        if (node == null) {
+            return null;
+        }
+        if (amount > Integer.MAX_VALUE - node.data.getQuantity()) {
+            throw new IllegalArgumentException("Cannot receive stock: total quantity would exceed "
+                    + Integer.MAX_VALUE + ".");
+        }
         node.data.setQuantity(node.data.getQuantity() + amount);
         node.data.setDateReceived(LocalDate.now());
         return node.data;
     }
 
     /**
-     * Issues material to production. Returns:
-     *   updated record on success, null if ID not found.
-     * Throws IllegalArgumentException if there is not enough stock.
+     * Issues material to production. Returns: updated record on success, null
+     * if ID not found. Throws IllegalArgumentException if the amount is
+     * nonpositive or exceeds available stock.
      */
     public Material issueToProduction(String id, int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Quantity to issue must be positive.");
+        }
         DoublyLinkedList.Node<Material> node = findNodeById(id);
-        if (node == null) return null;
+        if (node == null) {
+            return null;
+        }
         if (amount > node.data.getQuantity()) {
             throw new IllegalArgumentException("Insufficient stock: only "
                     + node.data.getQuantity() + " " + node.data.getUnit() + " available.");
@@ -126,7 +166,9 @@ public class InventoryManager {
     }
 
     // ------------------------------------------------------------------ sorting
-    /** Sorts with merge sort. Returns the number of comparisons made. */
+    /**
+     * Sorts with merge sort. Returns the number of comparisons made.
+     */
     public long sort(SortField field, boolean ascending) {
         Comparator<Material> cmp = ascending ? field.comparator : field.comparator.reversed();
         return MergeSort.sort(materials, cmp);
@@ -139,8 +181,11 @@ public class InventoryManager {
             return;
         }
         System.out.println(Material.tableHeader());
-        if (forward) materials.forEachForward(System.out::println);
-        else materials.forEachBackward(System.out::println);
+        if (forward) {
+            materials.forEachForward(System.out::println); 
+        }else {
+            materials.forEachBackward(System.out::println);
+        }
         System.out.printf("%d record(s). Total stock value: %,.2f%n", materials.size(), totalValue());
     }
 
@@ -156,15 +201,23 @@ public class InventoryManager {
 
     public double totalValue() {
         double total = 0;
-        for (Material m : materials) total += m.getTotalValue();
+        for (Material m : materials) {
+            total += m.getTotalValue();
+        }
         return total;
     }
 
-    public int size() { return materials.size(); }
+    public int size() {
+        return materials.size();
+    }
 
-    public boolean isEmpty() { return materials.isEmpty(); }
+    public boolean isEmpty() {
+        return materials.isEmpty();
+    }
 
-    public void clear() { materials.clear(); }
+    public void clear() {
+        materials.clear();
+    }
 
     // -------------------------------------------------------------- sample data
     public void loadSampleData() {

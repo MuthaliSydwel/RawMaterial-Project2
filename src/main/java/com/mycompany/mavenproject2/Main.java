@@ -1,7 +1,6 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
-
 package com.mycompany.mavenproject2;
 
 /**
@@ -28,18 +27,30 @@ public class Main {
             int choice = readInt("Choose an option: ", 0, 12);
             System.out.println();
             switch (choice) {
-                case 1 -> addMaterial();
-                case 2 -> removeMaterial();
-                case 3 -> receiveStock();
-                case 4 -> issueStock();
-                case 5 -> searchMenu();
-                case 6 -> sortMenu();
-                case 7 -> inventory.display(true);
-                case 8 -> inventory.display(false);
-                case 9 -> lowStock();
-                case 10 -> Demo.demonstrateDoublyLinkedList();
-                case 11 -> Demo.runBenchmark();
-                case 12 -> loadSample();
+                case 1 ->
+                    addMaterial();
+                case 2 ->
+                    removeMaterial();
+                case 3 ->
+                    receiveStock();
+                case 4 ->
+                    issueStock();
+                case 5 ->
+                    searchMenu();
+                case 6 ->
+                    sortMenu();
+                case 7 ->
+                    inventory.display(true);
+                case 8 ->
+                    inventory.display(false);
+                case 9 ->
+                    lowStock();
+                case 10 ->
+                    Demo.demonstrateDoublyLinkedList();
+                case 11 ->
+                    Demo.runBenchmark();
+                case 12 ->
+                    loadSample();
                 case 0 -> {
                     System.out.println("Goodbye!");
                     running = false;
@@ -101,9 +112,16 @@ public class Main {
         System.out.println("--- Receive Stock ---");
         String id = readNonEmpty("Material ID: ");
         int amount = readInt("Quantity received: ", 1, Integer.MAX_VALUE);
-        Material m = inventory.receiveStock(id, amount);
-        if (m == null) System.out.println("No material with ID '" + id + "' found.");
-        else System.out.println("Updated: " + m.getName() + " now has " + m.getQuantity() + " " + m.getUnit());
+        try {
+            Material m = inventory.receiveStock(id, amount);
+            if (m == null) {
+                System.out.println("No material with ID '" + id + "' found.");
+            } else {
+                System.out.println("Updated: " + m.getName() + " now has " + m.getQuantity() + " " + m.getUnit());
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private static void issueStock() {
@@ -116,7 +134,9 @@ public class Main {
                 System.out.println("No material with ID '" + id + "' found.");
             } else {
                 System.out.println("Issued. " + m.getName() + " now has " + m.getQuantity() + " " + m.getUnit());
-                if (m.isLowStock()) System.out.println("WARNING: stock is at or below the reorder level (" + m.getReorderLevel() + ")!");
+                if (m.isLowStock()) {
+                    System.out.println("WARNING: stock is at or below the reorder level (" + m.getReorderLevel() + ")!");
+                }
             }
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
@@ -136,11 +156,16 @@ public class Main {
         switch (choice) {
             case 1 -> {
                 Material m = inventory.searchById(key);
-                if (m != null) results.addLast(m);
+                if (m != null) {
+                    results.addLast(m);
+                }
             }
-            case 2 -> results = inventory.searchByName(key);
-            case 3 -> results = inventory.searchByCategory(key);
-            case 4 -> results = inventory.searchBySupplier(key);
+            case 2 ->
+                results = inventory.searchByName(key);
+            case 3 ->
+                results = inventory.searchByCategory(key);
+            case 4 ->
+                results = inventory.searchBySupplier(key);
         }
         InventoryManager.displayList(results);
         System.out.println("(elements examined: " + inventory.lastSearchComparisons() + " of " + inventory.size() + ")");
@@ -191,7 +216,9 @@ public class Main {
     private static String readNonEmpty(String prompt) {
         while (true) {
             String s = readLine(prompt);
-            if (!s.isEmpty()) return s;
+            if (!s.isEmpty()) {
+                return s;
+            }
             System.out.println("  Value cannot be empty.");
         }
     }
@@ -201,7 +228,9 @@ public class Main {
             String s = readLine(prompt);
             try {
                 int v = Integer.parseInt(s);
-                if (v >= min && v <= max) return v;
+                if (v >= min && v <= max) {
+                    return v;
+                }
                 System.out.println("  Enter a number between " + min + " and " + (max == Integer.MAX_VALUE ? "max" : max) + ".");
             } catch (NumberFormatException e) {
                 System.out.println("  Invalid number.");
@@ -214,8 +243,10 @@ public class Main {
             String s = readLine(prompt);
             try {
                 double v = Double.parseDouble(s);
-                if (v >= 0) return v;
-                System.out.println("  Value cannot be negative.");
+                if (Double.isFinite(v) && v >= 0) {
+                    return v;
+                }
+                System.out.println("  Enter a finite, nonnegative number.");
             } catch (NumberFormatException e) {
                 System.out.println("  Invalid number.");
             }
@@ -225,7 +256,9 @@ public class Main {
     private static LocalDate readDate(String prompt) {
         while (true) {
             String s = readLine(prompt);
-            if (s.isEmpty()) return LocalDate.now();
+            if (s.isEmpty()) {
+                return LocalDate.now();
+            }
             try {
                 return LocalDate.parse(s);
             } catch (DateTimeParseException e) {
